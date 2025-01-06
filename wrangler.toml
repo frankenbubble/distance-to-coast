@@ -1,4 +1,4 @@
-name = "distance2coast"
+name = "coastline-dawn-d7f5"
 main = "src/entry.py"
 compatibility_flags = ["python_workers"]
 compatibility_date = "2024-03-29"
