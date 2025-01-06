@@ -7,7 +7,7 @@ from geopandas import GeoDataFrame
 
 # Load coastline data from a local GeoJSON file
 # Get the coastlines from https://www.naturalearthdata.com/downloads/10m-physical-vectors/
-source_url = "ne_10m_coastline.zip"
+source_url = "/data/ne_10m_coastline.zip"
 coastlines = gpd.read_file(source_url)
 coastlines_geometry = coastlines['geometry'].unary_union
 
