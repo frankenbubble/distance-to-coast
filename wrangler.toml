@@ -2,3 +2,9 @@ name = "coastline-dawn-d7f5"
 main = "src/entry.py"
 compatibility_flags = ["python_workers"]
 compatibility_date = "2024-03-29"
+base_dir = "."
+find_additional_modules = true
+
+[[rules]]
+type = "Data"
+globs = ["data/*.zip"]

@@ -1,17 +1,18 @@
 
+import io
 import json
+import geopandas as gpd
 from shapely.geometry import Point
 from shapely.ops import nearest_points
 from pyproj import Geod
-from geopandas import GeoDataFrame
+from js import Response
+import data.ne_10m_coastline as coastline_zip
 
-# Load coastline data from a local GeoJSON file
-# Get the coastlines from https://www.naturalearthdata.com/downloads/10m-physical-vectors/
-source_url = "/data/ne_10m_coastline.zip"
-coastlines = gpd.read_file(source_url)
+coastlines = gpd.read_file(io.BytesIO(bytes(coastline_zip)))
 coastlines_geometry = coastlines['geometry'].unary_union
 
 geod = Geod(ellps="WGS84")
+
 
 def get_nearest_distance_location(coordinate, coastlines_geometry, geod):
     point = Point(coordinate['longitude'], coordinate['latitude'])
@@ -37,10 +38,10 @@ def generate_bing_maps_link(latitude, longitude, nearest_latitude, nearest_longi
     return bing_maps_url
 
 
-async def handle_request(request):
+async def on_fetch(request, env):
     try:
         body = await request.json()
-        
+
         if 'coordinates' in body:
             coordinates = body['coordinates']
             results = []
@@ -61,19 +62,11 @@ async def handle_request(request):
                 }
                 results.append(result)
 
-            response = {
-                "results": results
-            }
+            response = {"results": results}
         else:
             response = {"error": "Invalid request"}
 
-        return Response(json.dumps(response), status=200, headers={"Content-Type": "application/json"})
+        return Response.new(json.dumps(response), status=200, headers={"Content-Type": "application/json"})
 
     except Exception as e:
-        return Response(json.dumps({"error": str(e)}), status=500, headers={"Content-Type": "application/json"})
-
-
-# Register the Cloudflare Worker
-from cloudflare_worker import Worker
-worker = Worker()
-worker.route("/nearest-coast", handle_request)
+        return Response.new(json.dumps({"error": str(e)}), status=500, headers={"Content-Type": "application/json"})
