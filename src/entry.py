@@ -1,20 +1,20 @@
 
+import io
 import json
-from shapely.geometry import Point, shape
-from shapely.ops import nearest_points, unary_union
+import geopandas as gpd
+from shapely.geometry import Point
+from shapely.ops import nearest_points
 from pyproj import Geod
 from js import Response
-import data.ne_10m_coastline as coastline_geojson
+import data.ne_10m_coastline as coastline_zip
 
-coastlines_geometry = unary_union([
-    shape(feat['geometry'])
-    for feat in json.loads(coastline_geojson)['features']
-])
+coastlines = gpd.read_file(io.BytesIO(bytes(coastline_zip)))
+coastlines_geometry = coastlines['geometry'].unary_union
 
 geod = Geod(ellps="WGS84")
 
 
-def get_nearest_distance_location(coordinate):
+def get_nearest_distance_location(coordinate, coastlines_geometry, geod):
     point = Point(coordinate['longitude'], coordinate['latitude'])
     nearest_geom = nearest_points(point, coastlines_geometry)
 
@@ -46,7 +46,9 @@ async def on_fetch(request, env):
             results = []
 
             for coord in coordinates:
-                distance, location, nearest_coast = get_nearest_distance_location(coord)
+                distance, location, nearest_coast = get_nearest_distance_location(
+                    coord, coastlines_geometry, geod
+                )
                 results.append({
                     "location": location,
                     "distance": distance,
