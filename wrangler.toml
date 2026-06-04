@@ -6,5 +6,6 @@ base_dir = "."
 find_additional_modules = true
 
 [[rules]]
-type = "Data"
-globs = ["data/*.zip"]
+type = "Text"
+globs = ["data/*.geojson"]
+fallthrough = true
